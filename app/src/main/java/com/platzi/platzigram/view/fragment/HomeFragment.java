@@ -11,21 +11,32 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.platzi.platzigram.R;
 import com.platzi.platzigram.adapter.PictureAdapterRecyclerView;
+import com.platzi.platzigram.api.PlatzigramClient;
+import com.platzi.platzigram.api.PlatzigramFirebaseService;
+import com.platzi.platzigram.api.PostResponse;
 import com.platzi.platzigram.model.Picture;
+import com.platzi.platzigram.model.Post;
 
 import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * A simple {@link Fragment} subclass.
  *
  */
 public class HomeFragment extends Fragment {
+
+    public final static String TAG = "Home";
 
 
     public HomeFragment() {
@@ -39,6 +50,32 @@ public class HomeFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         showToolbar(getResources().getString(R.string.tab_home), false, view);
+
+
+        /* get All Post */
+        PlatzigramFirebaseService service = (new PlatzigramClient()).getService();
+
+
+        Call<PostResponse> itemListCall = service.getPostList();
+        itemListCall.enqueue(new Callback<PostResponse>() {
+
+            @Override
+            public void onResponse(Call<PostResponse> call, Response<PostResponse> response) {
+                if (response.isSuccessful()) {
+                    PostResponse result = response.body();
+                    ArrayList<Post> posts = result.getPostList();
+                    Log.i(TAG,posts.toString());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PostResponse> call, Throwable t) {
+                Log.e(TAG,"error " + t.getLocalizedMessage());
+            }
+        });
+
+
+
         RecyclerView picturesRecycler = (RecyclerView) view.findViewById(R.id.pictureRecycler);
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
